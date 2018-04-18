@@ -6,13 +6,15 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class TSP {
-    public static int matrizDistancias [][] = {{8,7,4,3,20}, {6,10,16,22,9}, {4,1,13,11,18}, {3,21,2,30,7}, {14,15,29,26,27}};
+    public static int matrizDistancias [][] = {{8,7,4,3,20,15}, {6,10,16,22,9,16}, {4,1,13,11,18,17}, {3,21,2,30,7,18}, {14,15,29,26,27,19}, {4,5,19,16,5,22}};
     public static ArrayList<String> bits = new ArrayList<>(Arrays.asList("000", "001", "010", "011", "100", "101", "110", "111"));
     public static ArrayList ids = new ArrayList();
+    public static Ruta[][] rutas = new Ruta[6][6];
     
-    public static void main(String[] args){
-        // GENERAR IDENTIFICADORES
-        for(int i=0;i<5;i++){
+     public static void main(String[] args){
+         
+        // Generar identificadores
+        for(int i=0;i<6;i++){
             Random rand = new Random();
             int  n = rand.nextInt(bits.size());
             String id = bits.get(n);
@@ -22,9 +24,8 @@ public class TSP {
         }
         
         //Inicializar matriz de rutas finales
-        Ruta[][] rutas = new Ruta[5][5];
-        for(int n=0; n < 5; n++){ //n=tiendas
-            for(int m=0; m<5;m++){ //m=ruta
+        for(int n=0; n < 6; n++){ //n=ciudad
+            for(int m=0; m<6;m++){ //m=ruta
                 rutas[n][m] = new Ruta();
             }
         } 
@@ -36,7 +37,7 @@ public class TSP {
                 ArrayList ids2 = new ArrayList();
                 ids2 = (ArrayList) ids.clone();
                 ArrayList ruta_gen = new ArrayList();
-                for(int j=0; j<5; j++){
+                for(int j=0; j<6; j++){
                     Random rand = new Random();
                     int  n = rand.nextInt(ids2.size());
                     ruta_gen.add(ids2.get(n));
@@ -44,55 +45,69 @@ public class TSP {
                 }
             //}
             
-            // Ver en que tienda empezó
+            // Ver en que ciudad empezó
             // Ver el primer cromosoma de la ruta generada
-            int num_tienda=0;
-            for(int k=0; k<5; k++){
+            int num_cd=0;
+            for(int k=0; k<6; k++){
                 if(ids.get(k).equals(ruta_gen.get(0))){
-                    num_tienda = k;
+                    num_cd = k;
+                }
+            }
+            //System.out.println("CROMOSOMA 1: " + ruta_gen.get(0) + " CIUDAD: " + (num_cd+1) );
+            
+            // Tratar de llenar las primeras 6 rutas que se generen
+            boolean inserto = false;
+            for(int m=0; m < 6; m++){
+                if(rutas[num_cd][m].ruta.isEmpty() && inserto == false){
+                    //agrega la ruta_gen a la matriz de rutas en su atributo ruta de la posición vacía(copia ruta_gen a esa posicion) 
+                    for(int n=0; n < 6; n++){ 
+                        rutas[num_cd][m].ruta.add(ruta_gen.get(n));
+                    }
+                    //System.out.println("Size=" + rutas[num_cd][m].ruta.size());
+                    rutas[num_cd][m].calcu_peso();
+                    //int peso = calcu_peso(rutas[num_cd][m].ruta);
+                    //rutas[num_cd][m].peso = peso;
+                    inserto = true;
                 }
             }
             
-            // Tratar de llenar las primeras 5 rutas que se generen
-            boolean inserto = false;
-            for(int m=0; m < 5; m++){
-                if(rutas[num_tienda][m].ruta.isEmpty()){
-                    //agrega la ruta_gen a la matriz de rutas en su atributo ruta de la posición vacía(copia ruta_gen a esa posicion) 
-                    for(int n=0; n < 5; n++){ 
-                        rutas[num_tienda][m].ruta.add(ruta_gen.get(n));
-                    }
-                    rutas[num_tienda][m].calcu_peso();
-                    inserto = true;
-                }
-            }      
-            
-            //Ver si existe (repitio) o no
+            // Ver si existe (repitio) o no
             boolean existe = false;
             if(inserto == false){
-                for(int p=0; p < 5; p++){
+                for(int p=0; p < 6; p++){
                     int q = 0;
-                    while(q < 5){
-                        if(rutas[num_tienda][p].ruta.get(q).equals(ruta_gen.get(q)) == false){
+                    while(q < 6){
+                        if(rutas[num_cd][p].ruta.get(q).equals(ruta_gen.get(q)) == false){
                             break;
                         } 
                         q++;
                     }      
-                    if(q == 5){
+                    if(q == 6){
                         //Mutación ISSUE#1:@CITLALY
                         existe = true;
                     }
                 }
             }
             
+            System.out.println("RUTA: " + ruta_gen.toString());
+            System.out.println("La ruta existe = " + existe);
+            
             // Mutar (generar una nueva ruta)
             if(existe){
                 System.out.println("Ruta anterior: " + ruta_gen.toString());
                 Random rand = new Random();
-                int  n1 = rand.nextInt(bits.size()); 
-                int  n2 = rand.nextInt(bits.size()); 
+                int  n1 = rand.nextInt(6); 
+                int n2;
+                if(n1 >= 5){
+                    n2 = n1-1;
+                }else{
+                    n2 = n1+1;
+                }
+                /*int  n2 = rand.nextInt(bits.size()); 
                 while(n2 == n1){
                     n2 = rand.nextInt(bits.size()); 
                 }
+                */
                 String aux = (String)ruta_gen.get(n1);
                 ruta_gen.set(n1, ruta_gen.get(n2));
                 ruta_gen.set(n2, aux);             
@@ -104,42 +119,38 @@ public class TSP {
                 int peso_ruta_gen = calcu_peso(ruta_gen);
                 
                 // Saca el peso mayor
-                int peso_mayor = rutas[num_tienda][0].peso;
+                int peso_mayor = rutas[num_cd][0].peso;
                 int pos = 0;
-                for(int r=0; r < 5; r++){
-                    if(peso_mayor < rutas[num_tienda][r].peso){
-                        peso_mayor = rutas[num_tienda][r].peso;
+                for(int r=0; r < 6; r++){
+                    if(peso_mayor < rutas[num_cd][r].peso){
+                        peso_mayor = rutas[num_cd][r].peso;
                         pos = r;
                     }
                 }
                 
                 //Compara si lo puede sustituir
                 if(peso_ruta_gen < peso_mayor){
-                    rutas[num_tienda][pos].ruta.clear();
-                    for(int s=0; s < 5; s++){ 
-                        rutas[num_tienda][pos].ruta.add(ruta_gen.get(s));
+                    rutas[num_cd][pos].ruta.clear();
+                    for(int s=0; s < 6; s++){ 
+                        rutas[num_cd][pos].ruta.add(ruta_gen.get(s));
                     }
-                    rutas[num_tienda][pos].calcu_peso();
-                    System.out.print("Peso metodo: " + rutas[num_tienda][pos].peso + " Peso mayor: " + peso_mayor);
+                    //rutas[num_tienda][pos].calcu_peso();
+                    System.out.println("Peso metodo: " + rutas[num_cd][pos].peso + " Peso mayor: " + peso_mayor);
                     inserto = true;
                 } 
-            }            
+            }
             
-            // *************CHECALE
-            // checar si sirve
-            // checar bandera inserto
-            // checar si cuando muto i++;
-            // acabar el if
             i++;
         }
+        imprimirMatriz();
     }
-    
+     
     public static int calcu_peso(ArrayList ruta){
         ArrayList rc = new ArrayList();
         for(int i=0; i < ruta.size(); i++){
             int num_cd = 0;
-            for(int j=0; j < 5; j++){
-                if(ruta.get(i).equals(TSP.ids.get(j))){
+            for(int j=0; j < 6; j++){
+                if(ruta.get(i).equals(ids.get(j))){
                     num_cd = j;
                     break;
                 }
@@ -148,11 +159,20 @@ public class TSP {
         }
         int x = 1;
         int pesototal = 0;
-        while(x < 5){
-            pesototal = pesototal + TSP.matrizDistancias[(int)rc.get(x-1)][(int)rc.get(x)];
+        while(x < 6){
+            pesototal = pesototal + matrizDistancias[(int)rc.get(x-1)][(int)rc.get(x)];
             x++;
         }
         System.out.println("Ciudad: " + rc.get(0) + " ruta:" + ruta.toString() + " peso: " + pesototal);
         return pesototal;
+    }
+    
+    public static void imprimirMatriz(){
+        for(int a=0; a < 6; a++){
+            for(int b=0; b < 6; b++){
+                System.out.println("#CD: " + (a+1) + " #RUTA: " + (b+1) + " RUTA: " + rutas[a][b].ruta.toString() + " PESO: " + rutas[a][b].peso);
+                        
+            }
+        }
     }
 }
