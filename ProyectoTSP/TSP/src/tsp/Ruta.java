@@ -30,7 +30,7 @@ public class Ruta {
             x++;
         }
         this.peso = pesototal;
-        System.out.println("Ciudad: " + rc.get(0) + " ruta:" + this.ruta.toString() + " peso: " + this.peso);
+        //*System.out.println("Ciudad: " + rc.get(0) + " ruta:" + this.ruta.toString() + " peso: " + this.peso);
         
         //return pesototal;
         /*

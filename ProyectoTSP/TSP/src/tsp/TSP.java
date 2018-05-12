@@ -4,16 +4,38 @@ package tsp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.Scanner;
 
 public class TSP {
+    public static int num_ciudades=10;
     public static int matrizDistancias [][] = {{8,7,4,3,20,15}, {6,10,16,22,9,16}, {4,1,13,11,18,17}, {3,21,2,30,7,18}, {14,15,29,26,27,19}, {4,5,19,16,5,22}};
     public static ArrayList<String> bits = new ArrayList<>(Arrays.asList("000", "001", "010", "011", "100", "101", "110", "111"));
     public static ArrayList ids = new ArrayList();
     public static Ruta[][] rutas = new Ruta[6][6];
+    public static ArrayList<Ruta> mejoresRutas = new ArrayList<Ruta>();
     
      public static void main(String[] args){
+        
+         /*
+        
+        //Pedir el numero de ciudades
+        System.out.println("Dime número de ciudades:");
+        Scanner reader = new Scanner(System.in);
+        num_ciudades = reader.nextInt();
+        int matrizDist[][] = new int[num_ciudades][num_ciudades];
+         
+        //Generar distancias aleatorias
+        for(int i=0; i<num_ciudades; i++){
+            for(int j=0; j<num_ciudades; j++){
+                matrizDist[i][j] = (int) (Math.random() * 50) + 1;
+            }
+        }
+        
+         */
+        
          
         // Generar identificadores
+        System.out.println("Identificadores (Bits):\n");
         for(int i=0;i<6;i++){
             Random rand = new Random();
             int  n = rand.nextInt(bits.size());
@@ -89,12 +111,12 @@ public class TSP {
                 }
             }
             
-            System.out.println("RUTA: " + ruta_gen.toString());
-            System.out.println("La ruta existe = " + existe);
+            //**System.out.println("RUTA: " + ruta_gen.toString());
+            //**System.out.println("La ruta existe = " + existe);
             
             // Mutar (generar una nueva ruta)
             if(existe){
-                System.out.println("Ruta anterior: " + ruta_gen.toString());
+                //**System.out.println("Ruta anterior: " + ruta_gen.toString());
                 Random rand = new Random();
                 int  n1 = rand.nextInt(6); 
                 int n2;
@@ -111,7 +133,7 @@ public class TSP {
                 String aux = (String)ruta_gen.get(n1);
                 ruta_gen.set(n1, ruta_gen.get(n2));
                 ruta_gen.set(n2, aux);             
-                System.out.println("Ruta mutada: " + ruta_gen.toString());
+                //**System.out.println("Ruta mutada: " + ruta_gen.toString());
             }
             
             // Comparar pesos para ver si sustituye a una ruta introducida
@@ -135,14 +157,43 @@ public class TSP {
                         rutas[num_cd][pos].ruta.add(ruta_gen.get(s));
                     }
                     //rutas[num_tienda][pos].calcu_peso();
-                    System.out.println("Peso metodo: " + rutas[num_cd][pos].peso + " Peso mayor: " + peso_mayor);
+                    //*System.out.println("Peso metodo: " + rutas[num_cd][pos].peso + " Peso mayor: " + peso_mayor);
                     inserto = true;
                 } 
             }
             
             i++;
+        }        
+        
+        //Obtener la mejor ruta de las cinco
+        for(int u=0; u<6; u++){
+            Ruta mejor = new Ruta();
+            //int peso = 0;
+            int pos = 0;
+            int menorPeso = 1000;
+            for(int v=0; v<6; v++){
+                if(rutas[u][v].peso < menorPeso){
+                    menorPeso = rutas[u][v].peso;
+                    pos = v;
+                }
+            }
+            //Llenamos vectores de mejores rutas
+            mejor.peso = menorPeso;
+            //vaciar la mejor ruta
+            for(int w=0; w<6; w++){
+                mejor.ruta.add(rutas[u][pos].ruta.get(w));
+            }    
+            
+            mejoresRutas.add(mejor);
         }
-        imprimirMatriz();
+        
+        //*System.out.println("Numero de mejores ciudades: " + mejoresRutas.size());
+        
+        imprimirMatrizDistancias();
+        
+        imprimirMatrizRutas();
+        
+        imprimirMejoresRutas();
     }
      
     public static int calcu_peso(ArrayList ruta){
@@ -163,16 +214,39 @@ public class TSP {
             pesototal = pesototal + matrizDistancias[(int)rc.get(x-1)][(int)rc.get(x)];
             x++;
         }
-        System.out.println("Ciudad: " + rc.get(0) + " ruta:" + ruta.toString() + " peso: " + pesototal);
+        //**System.out.println("Ciudad: " + rc.get(0) + " ruta:" + ruta.toString() + " peso: " + pesototal);
         return pesototal;
     }
     
-    public static void imprimirMatriz(){
+    public static void imprimirMatrizRutas(){
+        System.out.println("\n\nRutas generadas");
         for(int a=0; a < 6; a++){
             for(int b=0; b < 6; b++){
                 System.out.println("#CD: " + (a+1) + " #RUTA: " + (b+1) + " RUTA: " + rutas[a][b].ruta.toString() + " PESO: " + rutas[a][b].peso);
                         
             }
         }
+    }
+    
+    public static void imprimirMejoresRutas(){
+        System.out.println("\n\nMejores rutas:\n");
+        for(int a=0; a < 6; a++){
+            System.out.println("#CD: " + (a+1) + " MEJOR RUTA: " + mejoresRutas.get(a).ruta + " PESO: " + mejoresRutas.get(a).peso);
+        }
+    }
+    
+    public static void imprimirMatrizDistancias(){
+        System.out.println("\n\nMatriz de distancias:\n");
+        for(int a=0; a < 6; a++){
+            for(int b=0; b < 6; b++){
+                if(matrizDistancias[a][b]>9){
+                    System.out.print("["+matrizDistancias[a][b]+"] ");
+                }else{
+                    System.out.print("[0"+matrizDistancias[a][b]+"] ");
+                }
+                        
+            }
+            System.out.print("\n");
+        }        
     }
 }
